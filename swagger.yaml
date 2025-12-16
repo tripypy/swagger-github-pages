@@ -248,7 +248,7 @@ paths:
           in: query
           schema:
             type: string
-            enum: [UPCOMING, ONGOING, COMPLETED]
+            enum: [DRAFT, PLANNED, COMPLETED]
       responses:
         '200':
           description: 성공
@@ -283,6 +283,7 @@ paths:
       tags:
         - trip
       summary: 여행 수정
+      description: 모든 필드가 필요하지 않습니다. 부분적으로 업데이트가 가능합니다.
       security:
         - bearerAuth: []
       parameters:
@@ -318,6 +319,7 @@ paths:
           description: 성공
   /trips/{tripId}/items:
     put:
+      description: 'items의 필드는 spotId 또는 spot 중 하나만 쓸 수 있습니다.'
       tags:
         - trip
       summary: 여행 아이템 교체
@@ -719,7 +721,7 @@ components:
           format: date
         status:
           type: string
-          enum: [UPCOMING, ONGOING, COMPLETED]
+          enum: [DRAFT, PLANNED, COMPLETED]
         visibility:
           type: string
           enum: [PUBLIC, PRIVATE]
@@ -781,7 +783,7 @@ components:
           format: date
         status:
           type: string
-          enum: [UPCOMING, ONGOING, COMPLETED]
+          enum: [DRAFT, PLANNED, COMPLETED]
         visibility:
           type: string
           enum: [PUBLIC, PRIVATE]
@@ -818,7 +820,7 @@ components:
           format: date
         status:
           type: string
-          enum: [UPCOMING, ONGOING, COMPLETED]
+          enum: [DRAFT, PLANNED, COMPLETED]
         visibility:
           type: string
           enum: [PUBLIC, PRIVATE]
@@ -840,12 +842,19 @@ components:
             $ref: '#/components/schemas/Item'
     Item:
       type: object
+      description: 'spotId 또는 spot 중 하나만 존재해야 합니다.'
       properties:
         spotId:
           type: integer
           format: int64
+          description: '기존에 등록된 여행지 ID'
         spot:
           $ref: '#/components/schemas/SpotRequestDto'
+      oneOf:
+        - required:
+            - spotId
+        - required:
+            - spot'
     SpotRequestDto:
       type: object
       properties:
