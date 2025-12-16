@@ -1,718 +1,1074 @@
----
-swagger: "2.0"
+openapi: 3.0.3
 info:
-  description: "This is a sample server Petstore server.  You can find out more about\
-    \ Swagger at [http://swagger.io](http://swagger.io) or on [irc.freenode.net, #swagger](http://swagger.io/irc/).\
-    \  For this sample, you can use the api key `special-key` to test the authorization\
-    \ filters."
-  version: "1.0.5"
-  title: "Swagger Petstore"
-  termsOfService: "http://swagger.io/terms/"
-  contact:
-    email: "apiteam@swagger.io"
-  license:
-    name: "Apache 2.0"
-    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
-host: "petstore.swagger.io"
-basePath: "/v2"
+  title: TRIT API
+  version: 1.0.0
+servers:
+  - url: https://localhost:8080
+    description: Local server
 tags:
-- name: "pet"
-  description: "Everything about your Pets"
-  externalDocs:
-    description: "Find out more"
-    url: "http://swagger.io"
-- name: "store"
-  description: "Access to Petstore orders"
-- name: "user"
-  description: "Operations about user"
-  externalDocs:
-    description: "Find out more about our store"
-    url: "http://swagger.io"
-schemes:
-- "https"
-- "http"
+  - name: auth
+    description: 인증 관련 API
+  - name: search
+    description: 검색 관련 API
+  - name: trip
+    description: 여행 관련 API
+  - name: triplog
+    description: 여행 기록 관련 API
+  - name: user
+    description: 사용자 관련 API
 paths:
-  /pet/{petId}/uploadImage:
+  /auth/login:
     post:
       tags:
-      - "pet"
-      summary: "uploads an image"
-      description: ""
-      operationId: "uploadFile"
-      consumes:
-      - "multipart/form-data"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "petId"
-        in: "path"
-        description: "ID of pet to update"
+        - auth
+      summary: 로그인
+      requestBody:
         required: true
-        type: "integer"
-        format: "int64"
-      - name: "additionalMetadata"
-        in: "formData"
-        description: "Additional data to pass to server"
-        required: false
-        type: "string"
-      - name: "file"
-        in: "formData"
-        description: "file to upload"
-        required: false
-        type: "file"
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequestDto'
       responses:
-        200:
-          description: "successful operation"
-          schema:
-            $ref: "#/definitions/ApiResponse"
-      security:
-      - petstore_auth:
-        - "write:pets"
-        - "read:pets"
-  /pet:
-    post:
-      tags:
-      - "pet"
-      summary: "Add a new pet to the store"
-      description: ""
-      operationId: "addPet"
-      consumes:
-      - "application/json"
-      - "application/xml"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - in: "body"
-        name: "body"
-        description: "Pet object that needs to be added to the store"
-        required: true
-        schema:
-          $ref: "#/definitions/Pet"
-      responses:
-        405:
-          description: "Invalid input"
-      security:
-      - petstore_auth:
-        - "write:pets"
-        - "read:pets"
-    put:
-      tags:
-      - "pet"
-      summary: "Update an existing pet"
-      description: ""
-      operationId: "updatePet"
-      consumes:
-      - "application/json"
-      - "application/xml"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - in: "body"
-        name: "body"
-        description: "Pet object that needs to be added to the store"
-        required: true
-        schema:
-          $ref: "#/definitions/Pet"
-      responses:
-        400:
-          description: "Invalid ID supplied"
-        404:
-          description: "Pet not found"
-        405:
-          description: "Validation exception"
-      security:
-      - petstore_auth:
-        - "write:pets"
-        - "read:pets"
-  /pet/findByStatus:
-    get:
-      tags:
-      - "pet"
-      summary: "Finds Pets by status"
-      description: "Multiple status values can be provided with comma separated strings"
-      operationId: "findPetsByStatus"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - name: "status"
-        in: "query"
-        description: "Status values that need to be considered for filter"
-        required: true
-        type: "array"
-        items:
-          type: "string"
-          enum:
-          - "available"
-          - "pending"
-          - "sold"
-          default: "available"
-        collectionFormat: "multi"
-      responses:
-        200:
-          description: "successful operation"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Pet"
-        400:
-          description: "Invalid status value"
-      security:
-      - petstore_auth:
-        - "write:pets"
-        - "read:pets"
-  /pet/findByTags:
-    get:
-      tags:
-      - "pet"
-      summary: "Finds Pets by tags"
-      description: "Multiple tags can be provided with comma separated strings. Use\
-        \ tag1, tag2, tag3 for testing."
-      operationId: "findPetsByTags"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - name: "tags"
-        in: "query"
-        description: "Tags to filter by"
-        required: true
-        type: "array"
-        items:
-          type: "string"
-        collectionFormat: "multi"
-      responses:
-        200:
-          description: "successful operation"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Pet"
-        400:
-          description: "Invalid tag value"
-      security:
-      - petstore_auth:
-        - "write:pets"
-        - "read:pets"
-      deprecated: true
-  /pet/{petId}:
-    get:
-      tags:
-      - "pet"
-      summary: "Find pet by ID"
-      description: "Returns a single pet"
-      operationId: "getPetById"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - name: "petId"
-        in: "path"
-        description: "ID of pet to return"
-        required: true
-        type: "integer"
-        format: "int64"
-      responses:
-        200:
-          description: "successful operation"
-          schema:
-            $ref: "#/definitions/Pet"
-        400:
-          description: "Invalid ID supplied"
-        404:
-          description: "Pet not found"
-      security:
-      - api_key: []
-    post:
-      tags:
-      - "pet"
-      summary: "Updates a pet in the store with form data"
-      description: ""
-      operationId: "updatePetWithForm"
-      consumes:
-      - "application/x-www-form-urlencoded"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - name: "petId"
-        in: "path"
-        description: "ID of pet that needs to be updated"
-        required: true
-        type: "integer"
-        format: "int64"
-      - name: "name"
-        in: "formData"
-        description: "Updated name of the pet"
-        required: false
-        type: "string"
-      - name: "status"
-        in: "formData"
-        description: "Updated status of the pet"
-        required: false
-        type: "string"
-      responses:
-        405:
-          description: "Invalid input"
-      security:
-      - petstore_auth:
-        - "write:pets"
-        - "read:pets"
-    delete:
-      tags:
-      - "pet"
-      summary: "Deletes a pet"
-      description: ""
-      operationId: "deletePet"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - name: "api_key"
-        in: "header"
-        required: false
-        type: "string"
-      - name: "petId"
-        in: "path"
-        description: "Pet id to delete"
-        required: true
-        type: "integer"
-        format: "int64"
-      responses:
-        400:
-          description: "Invalid ID supplied"
-        404:
-          description: "Pet not found"
-      security:
-      - petstore_auth:
-        - "write:pets"
-        - "read:pets"
-  /store/order:
-    post:
-      tags:
-      - "store"
-      summary: "Place an order for a pet"
-      description: ""
-      operationId: "placeOrder"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - in: "body"
-        name: "body"
-        description: "order placed for purchasing the pet"
-        required: true
-        schema:
-          $ref: "#/definitions/Order"
-      responses:
-        200:
-          description: "successful operation"
-          schema:
-            $ref: "#/definitions/Order"
-        400:
-          description: "Invalid Order"
-  /store/order/{orderId}:
-    get:
-      tags:
-      - "store"
-      summary: "Find purchase order by ID"
-      description: "For valid response try integer IDs with value >= 1 and <= 10.\
-        \ Other values will generated exceptions"
-      operationId: "getOrderById"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - name: "orderId"
-        in: "path"
-        description: "ID of pet that needs to be fetched"
-        required: true
-        type: "integer"
-        maximum: 10
-        minimum: 1
-        format: "int64"
-      responses:
-        200:
-          description: "successful operation"
-          schema:
-            $ref: "#/definitions/Order"
-        400:
-          description: "Invalid ID supplied"
-        404:
-          description: "Order not found"
-    delete:
-      tags:
-      - "store"
-      summary: "Delete purchase order by ID"
-      description: "For valid response try integer IDs with positive integer value.\
-        \ Negative or non-integer values will generate API errors"
-      operationId: "deleteOrder"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - name: "orderId"
-        in: "path"
-        description: "ID of the order that needs to be deleted"
-        required: true
-        type: "integer"
-        minimum: 1
-        format: "int64"
-      responses:
-        400:
-          description: "Invalid ID supplied"
-        404:
-          description: "Order not found"
-  /store/inventory:
-    get:
-      tags:
-      - "store"
-      summary: "Returns pet inventories by status"
-      description: "Returns a map of status codes to quantities"
-      operationId: "getInventory"
-      produces:
-      - "application/json"
-      parameters: []
-      responses:
-        200:
-          description: "successful operation"
-          schema:
-            type: "object"
-            additionalProperties:
-              type: "integer"
-              format: "int32"
-      security:
-      - api_key: []
-  /user/createWithArray:
-    post:
-      tags:
-      - "user"
-      summary: "Creates list of users with given input array"
-      description: ""
-      operationId: "createUsersWithArrayInput"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - in: "body"
-        name: "body"
-        description: "List of user object"
-        required: true
-        schema:
-          type: "array"
-          items:
-            $ref: "#/definitions/User"
-      responses:
-        default:
-          description: "successful operation"
-  /user/createWithList:
-    post:
-      tags:
-      - "user"
-      summary: "Creates list of users with given input array"
-      description: ""
-      operationId: "createUsersWithListInput"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - in: "body"
-        name: "body"
-        description: "List of user object"
-        required: true
-        schema:
-          type: "array"
-          items:
-            $ref: "#/definitions/User"
-      responses:
-        default:
-          description: "successful operation"
-  /user/{username}:
-    get:
-      tags:
-      - "user"
-      summary: "Get user by user name"
-      description: ""
-      operationId: "getUserByName"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - name: "username"
-        in: "path"
-        description: "The name that needs to be fetched. Use user1 for testing. "
-        required: true
-        type: "string"
-      responses:
-        200:
-          description: "successful operation"
-          schema:
-            $ref: "#/definitions/User"
-        400:
-          description: "Invalid username supplied"
-        404:
-          description: "User not found"
-    put:
-      tags:
-      - "user"
-      summary: "Updated user"
-      description: "This can only be done by the logged in user."
-      operationId: "updateUser"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - name: "username"
-        in: "path"
-        description: "name that need to be updated"
-        required: true
-        type: "string"
-      - in: "body"
-        name: "body"
-        description: "Updated user object"
-        required: true
-        schema:
-          $ref: "#/definitions/User"
-      responses:
-        400:
-          description: "Invalid user supplied"
-        404:
-          description: "User not found"
-    delete:
-      tags:
-      - "user"
-      summary: "Delete user"
-      description: "This can only be done by the logged in user."
-      operationId: "deleteUser"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - name: "username"
-        in: "path"
-        description: "The name that needs to be deleted"
-        required: true
-        type: "string"
-      responses:
-        400:
-          description: "Invalid username supplied"
-        404:
-          description: "User not found"
-  /user/login:
-    get:
-      tags:
-      - "user"
-      summary: "Logs user into the system"
-      description: ""
-      operationId: "loginUser"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - name: "username"
-        in: "query"
-        description: "The user name for login"
-        required: true
-        type: "string"
-      - name: "password"
-        in: "query"
-        description: "The password for login in clear text"
-        required: true
-        type: "string"
-      responses:
-        200:
-          description: "successful operation"
+        '200':
+          description: 로그인 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponseDto'
           headers:
-            X-Expires-After:
-              type: "string"
-              format: "date-time"
-              description: "date in UTC when token expires"
-            X-Rate-Limit:
-              type: "integer"
-              format: "int32"
-              description: "calls per hour allowed by the user"
-          schema:
-            type: "string"
-        400:
-          description: "Invalid username/password supplied"
-  /user/logout:
-    get:
-      tags:
-      - "user"
-      summary: "Logs out current logged in user session"
-      description: ""
-      operationId: "logoutUser"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters: []
-      responses:
-        default:
-          description: "successful operation"
-  /user:
+            Set-Cookie:
+              schema:
+                type: string
+                example: refreshToken=...; Path=/; Secure; HttpOnly; SameSite=None
+        '400':
+          description: 잘못된 요청
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /auth/logout:
     post:
       tags:
-      - "user"
-      summary: "Create user"
-      description: "This can only be done by the logged in user."
-      operationId: "createUser"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - in: "body"
-        name: "body"
-        description: "Created user object"
-        required: true
-        schema:
-          $ref: "#/definitions/User"
+        - auth
+      summary: 로그아웃
+      security:
+        - bearerAuth: []
       responses:
-        default:
-          description: "successful operation"
-securityDefinitions:
-  api_key:
-    type: "apiKey"
-    name: "api_key"
-    in: "header"
-  petstore_auth:
-    type: "oauth2"
-    authorizationUrl: "https://petstore.swagger.io/oauth/authorize"
-    flow: "implicit"
-    scopes:
-      read:pets: "read your pets"
-      write:pets: "modify pets in your account"
-definitions:
-  ApiResponse:
-    type: "object"
-    properties:
-      code:
-        type: "integer"
-        format: "int32"
-      type:
-        type: "string"
-      message:
-        type: "string"
-  Category:
-    type: "object"
-    properties:
-      id:
-        type: "integer"
-        format: "int64"
-      name:
-        type: "string"
-    xml:
-      name: "Category"
-  Pet:
-    type: "object"
-    required:
-    - "name"
-    - "photoUrls"
-    properties:
-      id:
-        type: "integer"
-        format: "int64"
-      category:
-        $ref: "#/definitions/Category"
-      name:
-        type: "string"
-        example: "doggie"
-      photoUrls:
-        type: "array"
-        xml:
-          wrapped: true
-        items:
-          type: "string"
-          xml:
-            name: "photoUrl"
+        '200':
+          description: 로그아웃 성공
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                example: refreshToken=; Max-Age=0; Path=/; Secure; HttpOnly; SameSite=None
+        '401':
+          description: 인증 실패
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /auth/signup:
+    post:
       tags:
-        type: "array"
-        xml:
-          wrapped: true
+        - auth
+      summary: 회원가입
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignupRequestDto'
+      responses:
+        '201':
+          description: 회원가입 성공
+        '400':
+          description: 잘못된 요청
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /auth/reset-password:
+    post:
+      tags:
+        - auth
+      summary: 비밀번호 재설정 요청
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetRequestDto'
+      responses:
+        '200':
+          description: 성공
+        '400':
+          description: 잘못된 요청
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /auth/find-email/{nickname}:
+    get:
+      tags:
+        - auth
+      summary: 닉네임으로 이메일 찾기
+      parameters:
+        - name: nickname
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  email:
+                    type: string
+        '404':
+          description: 사용자를 찾을 수 없음
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /auth/refresh:
+    post:
+      tags:
+        - auth
+      summary: Access Token 갱신
+      parameters:
+        - name: refreshToken
+          in: cookie
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 토큰 갱신 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponseDto'
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                example: refreshToken=...; Path=/; Secure; HttpOnly; SameSite=None
+        '401':
+          description: 유효하지 않은 Refresh Token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /search/spots:
+    get:
+      tags:
+        - search
+      summary: 장소 검색
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 성공
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SpotSearchDoc'
+  /search/trip-logs:
+    get:
+      tags:
+        - search
+      summary: 여행 기록 검색
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 성공
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TripLogSearchDoc'
+  /search/trips:
+    get:
+      tags:
+        - search
+      summary: 여행 검색
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 성공
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TripSearchDoc'
+  /trips:
+    post:
+      tags:
+        - trip
+      summary: 여행 생성
+      security:
+        - bearerAuth: []
+      responses:
+        '201':
+          description: 여행 생성 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TripDetailResponseDto'
+    get:
+      tags:
+        - trip
+      summary: 내 여행 목록 조회
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [UPCOMING, ONGOING, COMPLETED]
+      responses:
+        '200':
+          description: 성공
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TripResponseDto'
+  /trips/{tripId}:
+    get:
+      tags:
+        - trip
+      summary: 여행 상세 조회
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TripDetailResponseDto'
+    patch:
+      tags:
+        - trip
+      summary: 여행 수정
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TripUpdateRequestDto'
+      responses:
+        '200':
+          description: 성공
+    delete:
+      tags:
+        - trip
+      summary: 여행 삭제
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: 성공
+  /trips/{tripId}/items:
+    put:
+      tags:
+        - trip
+      summary: 여행 아이템 교체
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TripItemsReplaceRequestDto'
+      responses:
+        '200':
+          description: 성공
+  /trip-logs/feed:
+    get:
+      tags:
+        - triplog
+      summary: 여행 기록 피드 조회
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: cursor
+          in: query
+          schema:
+            type: integer
+            format: int64
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SliceTripLogFeedResponseDto'
+  /trip-logs/{logId}:
+    get:
+      tags:
+        - triplog
+      summary: 여행 기록 상세 조회
+      parameters:
+        - name: logId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TripLogDetailResponseDto'
+  /trip-logs/{logId}/comments:
+    post:
+      tags:
+        - triplog
+      summary: 여행 기록 댓글 추가
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: logId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TripLogCommentRequestDto'
+      responses:
+        '201':
+          description: 성공
+  /trip-logs/{logId}/likes/status:
+    get:
+      tags:
+        - triplog
+      summary: 여행 기록 좋아요 상태 조회
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: logId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TripLogLikeResponseDto'
+  /trip-logs/{logId}/likes:
+    post:
+      tags:
+        - triplog
+      summary: 여행 기록 좋아요
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: logId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TripLogLikeResponseDto'
+    delete:
+      tags:
+        - triplog
+      summary: 여행 기록 좋아요 취소
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: logId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TripLogLikeResponseDto'
+  /users/me:
+    get:
+      tags:
+        - user
+      summary: 내 정보 조회
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfileResponseDto'
+    patch:
+      tags:
+        - user
+      summary: 내 정보 수정
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequestDto'
+      responses:
+        '200':
+          description: 성공
+  /users/{userId}/profile:
+    get:
+      tags:
+        - user
+      summary: 사용자 프로필 조회
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicUserProfileResponseDto'
+  /users/{userId}/friends:
+    get:
+      tags:
+        - user
+      summary: 사용자 친구 목록 조회
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: 성공
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PublicUserProfileResponseDto'
+  /users/profile-image:
+    post:
+      tags:
+        - user
+      summary: 프로필 이미지 수정
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                image:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileImageUpdateResponseDto'
+    delete:
+      tags:
+        - user
+      summary: 프로필 이미지 삭제
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: 성공
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    LoginRequestDto:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+    LoginResponseDto:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        expiresIn:
+          type: integer
+          format: int64
+        email:
+          type: string
+        nickname:
+          type: string
+    SignupRequestDto:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+        nickname:
+          type: string
+    PasswordResetRequestDto:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+    TokenResponseDto:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        expiresIn:
+          type: integer
+          format: int64
+    SpotSearchDoc:
+      type: object
+      properties:
+        spotId:
+          type: integer
+          format: int64
+        kakaoPlaceId:
+          type: string
+        name:
+          type: string
+        address:
+          type: string
+        category:
+          type: string
+        location:
+          $ref: '#/components/schemas/GeoPoint'
+        lat:
+          type: number
+          format: double
+        lng:
+          type: number
+          format: double
+        placeUrl:
+          type: string
+        thumbnailUrl:
+          type: string
+        reviewCount:
+          type: integer
+        averageRating:
+          type: number
+          format: double
+        createdAt:
+          type: string
+          format: date-time
+    GeoPoint:
+      type: object
+      properties:
+        lat:
+          type: number
+          format: double
+        lon:
+          type: number
+          format: double
+    TripLogSearchDoc:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        title:
+          type: string
+        content:
+          type: string
+        nickname:
+          type: string
+        profile_image_url:
+          type: string
+        image_url:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    TripSearchDoc:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        title:
+          type: string
+        nickname:
+          type: string
+        profile_image_url:
+          type: string
+        image_url:
+          type: string
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        createdAt:
+          type: string
+          format: date-time
+    TripDetailResponseDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        title:
+          type: string
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        status:
+          type: string
+          enum: [UPCOMING, ONGOING, COMPLETED]
+        visibility:
+          type: string
+          enum: [PUBLIC, PRIVATE]
+        locationSummary:
+          type: string
+        tripItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/TripItemResponseDto'
+    TripItemResponseDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        dayNumber:
+          type: integer
+        orderIndex:
+          type: integer
+        spot:
+          $ref: '#/components/schemas/SpotResponseDto'
+    SpotResponseDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        kakaoPlaceId:
+          type: string
+        name:
+          type: string
+        address:
+          type: string
+        category:
+          type: string
+        lat:
+          type: number
+          format: bigdecimal
+        lng:
+          type: number
+          format: bigdecimal
+        placeUrl:
+          type: string
+        thumbnailUrl:
+          type: string
+    TripResponseDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        title:
+          type: string
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        status:
+          type: string
+          enum: [UPCOMING, ONGOING, COMPLETED]
+        visibility:
+          type: string
+          enum: [PUBLIC, PRIVATE]
+        locationSummary:
+          type: string
+        isOwner:
+          type: boolean
+        spots:
+          type: integer
+        tags:
+          type: array
+          items:
+            type: string
+        spotPreviews:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+        completedDate:
+          type: string
+          format: date
+    TripUpdateRequestDto:
+      type: object
+      properties:
+        title:
+          type: string
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        status:
+          type: string
+          enum: [UPCOMING, ONGOING, COMPLETED]
+        visibility:
+          type: string
+          enum: [PUBLIC, PRIVATE]
+    TripItemsReplaceRequestDto:
+      type: object
+      properties:
+        days:
+          type: array
+          items:
+            $ref: '#/components/schemas/Day'
+    Day:
+      type: object
+      properties:
+        dayNumber:
+          type: integer
         items:
-          xml:
-            name: "tag"
-          $ref: "#/definitions/Tag"
-      status:
-        type: "string"
-        description: "pet status in the store"
-        enum:
-        - "available"
-        - "pending"
-        - "sold"
-    xml:
-      name: "Pet"
-  Tag:
-    type: "object"
-    properties:
-      id:
-        type: "integer"
-        format: "int64"
-      name:
-        type: "string"
-    xml:
-      name: "Tag"
-  Order:
-    type: "object"
-    properties:
-      id:
-        type: "integer"
-        format: "int64"
-      petId:
-        type: "integer"
-        format: "int64"
-      quantity:
-        type: "integer"
-        format: "int32"
-      shipDate:
-        type: "string"
-        format: "date-time"
-      status:
-        type: "string"
-        description: "Order Status"
-        enum:
-        - "placed"
-        - "approved"
-        - "delivered"
-      complete:
-        type: "boolean"
-    xml:
-      name: "Order"
-  User:
-    type: "object"
-    properties:
-      id:
-        type: "integer"
-        format: "int64"
-      username:
-        type: "string"
-      firstName:
-        type: "string"
-      lastName:
-        type: "string"
-      email:
-        type: "string"
-      password:
-        type: "string"
-      phone:
-        type: "string"
-      userStatus:
-        type: "integer"
-        format: "int32"
-        description: "User Status"
-    xml:
-      name: "User"
-externalDocs:
-  description: "Find out more about Swagger"
-  url: "http://swagger.io"
+          type: array
+          items:
+            $ref: '#/components/schemas/Item'
+    Item:
+      type: object
+      properties:
+        spotId:
+          type: integer
+          format: int64
+        spot:
+          $ref: '#/components/schemas/SpotRequestDto'
+    SpotRequestDto:
+      type: object
+      properties:
+        kakaoPlaceId:
+          type: string
+        name:
+          type: string
+        address:
+          type: string
+        category:
+          type: string
+        lat:
+          type: number
+          format: bigdecimal
+        lng:
+          type: number
+          format: bigdecimal
+        placeUrl:
+          type: string
+        thumbnailUrl:
+          type: string
+    SliceTripLogFeedResponseDto:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/TripLogFeedResponseDto'
+        nextCursor:
+          type: integer
+          format: int64
+        hasNext:
+          type: boolean
+    TripLogFeedResponseDto:
+      type: object
+      properties:
+        logId:
+          type: integer
+          format: int64
+        authorId:
+          type: integer
+          format: int64
+        authorNickname:
+          type: string
+        authorImageUrl:
+          type: string
+        title:
+          type: string
+        content:
+          type: string
+        locationSummary:
+          type: string
+        likeCount:
+          type: integer
+        commentCount:
+          type: integer
+        liked:
+          type: boolean
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/TripLogImageResponseDto'
+        createdAt:
+          type: string
+          format: date-time
+    TripLogImageResponseDto:
+      type: object
+      properties:
+        imageRefKey:
+          type: string
+        imageUrl:
+          type: string
+        orderIndex:
+          type: integer
+    TripLogDetailResponseDto:
+      type: object
+      properties:
+        logId:
+          type: integer
+          format: int64
+        title:
+          type: string
+        content:
+          type: string
+        locationSummary:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        authorNickname:
+          type: string
+        authorImageUrl:
+          type: string
+        tripId:
+          type: integer
+          format: int64
+        tripTitle:
+          type: string
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/TripLogImageResponseDto'
+        comments:
+          type: array
+          items:
+            $ref: '#/components/schemas/TripLogCommentResponseDto'
+        likeCount:
+          type: integer
+        commentCount:
+          type: integer
+    TripLogCommentResponseDto:
+      type: object
+      properties:
+        commentId:
+          type: integer
+          format: int64
+        authorNickname:
+          type: string
+        authorImageUrl:
+          type: string
+        content:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    TripLogCommentRequestDto:
+      type: object
+      properties:
+        content:
+          type: string
+    TripLogLikeResponseDto:
+      type: object
+      properties:
+        liked:
+          type: boolean
+        likeCount:
+          type: integer
+    UserProfileResponseDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        email:
+          type: string
+          format: email
+        nickname:
+          type: string
+        profileImageUrl:
+          type: string
+        bio:
+          type: string
+        intro:
+          type: string
+        homeRegionId:
+          type: integer
+          format: int64
+        travelStyleSummary:
+          type: string
+        travelStyleId:
+          type: integer
+          format: int64
+        profileBannerUrl:
+          type: string
+        isProfilePublic:
+          type: boolean
+        friendsCount:
+          type: integer
+    UpdateUserRequestDto:
+      type: object
+      properties:
+        nickname:
+          type: string
+        bio:
+          type: string
+    PublicUserProfileResponseDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        nickname:
+          type: string
+        profileImageUrl:
+          type: string
+        bio:
+          type: string
+        intro:
+          type: string
+        homeRegionId:
+          type: integer
+          format: int64
+        travelStyleSummary:
+          type: string
+        travelStyleId:
+          type: integer
+          format: int64
+        profileBannerUrl:
+          type: string
+        isProfilePublic:
+          type: boolean
+        friendsCount:
+          type: integer
+    ProfileImageUpdateResponseDto:
+      type: object
+      properties:
+        newImageUrl:
+          type: string
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        invalidParams:
+          type: array
+          items:
+            $ref: '#/components/schemas/InvalidParam'
+    InvalidParam:
+      type: object
+      properties:
+        name:
+          type: string
+        reason:
+          type: string
