@@ -414,6 +414,53 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PageTripLogFeedResponseDto'
+  /search/place:
+    get:
+      tags:
+        - search
+      summary: 키워드 장소 검색 (Kakao API)
+      parameters:
+        - name: keyword
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: lat
+          in: query
+          required: false
+          schema:
+            type: number
+            format: double
+        - name: lng
+          in: query
+          required: false
+          schema:
+            type: number
+            format: double
+      responses:
+        '200':
+          description: 성공
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SpotResponseDto'
+  /spots/hot:
+    get:
+      tags:
+        - spot
+      summary: Hot Place Top 10 조회
+      description: 여행 계획에 가장 많이 추가된 상위 10개 장소를 조회합니다. (10분 캐싱)
+      responses:
+        '200':
+          description: 조회 성공
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SpotResponseDto'
   /trip-logs/feed:
     get:
       tags:
