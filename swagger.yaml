@@ -542,6 +542,51 @@ paths:
       responses:
         '204':
           description: 성공
+  /trip-logs/comments/{commentId}:
+    patch:
+      tags:
+        - trip-log-comment
+      summary: 여행 기록 댓글 수정
+      operationId: updateTripLogComment
+      parameters:
+        - name: commentId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TripLogCommentRequestDto'
+        required: true
+      responses:
+        '200':
+          description: 댓글 수정 성공
+        '403':
+          description: 권한 없음 (작성자 불일치)
+        '404':
+          description: 댓글 없음
+    delete:
+      tags:
+        - trip-log-comment
+      summary: 여행 기록 댓글 삭제
+      operationId: deleteTripLogComment
+      parameters:
+        - name: commentId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: 댓글 삭제 성공
+        '403':
+          description: 권한 없음
+        '404':
+          description: 댓글 없음
   /trip-logs/{logId}/comments:
     post:
       tags:
@@ -1194,9 +1239,18 @@ components:
           type: string
         content:
           type: string
+        parentId:
+          type: integer
+          format: int64
+          description: 부모 댓글 ID
         createdAt:
           type: string
           format: date-time
+        replies:
+          type: array
+          items:
+            $ref: '#/components/schemas/TripLogCommentResponseDto'
+          description: 대댓글 리스트 (계층 구조)
     TripLogCommentRequestDto:
       type: object
       properties:
