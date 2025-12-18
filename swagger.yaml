@@ -340,6 +340,53 @@ paths:
       responses:
         '200':
           description: 성공
+  /trip-logs:
+    post:
+      tags:
+        - triplog
+      summary: 여행 기록 생성
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TripLogCreateRequestDto'
+      responses:
+        '201':
+          description: 생성 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TripLogCreateResponseDto'
+    get:
+      tags:
+        - triplog
+      summary: 유저별 여행 기록 전체 조회
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageTripLogFeedResponseDto'
   /trip-logs/feed:
     get:
       tags:
@@ -384,6 +431,43 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TripLogDetailResponseDto'
+    patch:
+      tags:
+        - triplog
+      summary: 여행 기록 수정
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: logId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TripLogUpdateRequestDto'
+      responses:
+        '200':
+          description: 성공
+    delete:
+      tags:
+        - triplog
+      summary: 여행 기록 삭제
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: logId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: 성공
   /trip-logs/{logId}/comments:
     post:
       tags:
@@ -496,6 +580,20 @@ paths:
       responses:
         '200':
           description: 성공
+  /users/me/analysis:
+    post:
+      tags:
+        - user
+      summary: 내 여행 스타일 AI 분석
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiTravelAnalysisDto'
   /users/{userId}/profile:
     get:
       tags:
@@ -888,6 +986,22 @@ components:
           format: int64
         hasNext:
           type: boolean
+    PageTripLogFeedResponseDto:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/TripLogFeedResponseDto'
+        page:
+          type: integer
+        size:
+          type: integer
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
     TripLogFeedResponseDto:
       type: object
       properties:
@@ -920,6 +1034,35 @@ components:
         createdAt:
           type: string
           format: date-time
+    TripLogCreateRequestDto:
+      type: object
+      properties:
+        tripId:
+          type: integer
+          format: int64
+        title:
+          type: string
+        content:
+          type: string
+        visibility:
+          type: string
+          enum: [PUBLIC, PRIVATE]
+    TripLogCreateResponseDto:
+      type: object
+      properties:
+        logId:
+          type: integer
+          format: int64
+    TripLogUpdateRequestDto:
+      type: object
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+        visibility:
+          type: string
+          enum: [PUBLIC, PRIVATE]
     TripLogImageResponseDto:
       type: object
       properties:
@@ -1063,6 +1206,26 @@ components:
       properties:
         newImageUrl:
           type: string
+    AiTravelAnalysisDto:
+      type: object
+      properties:
+        keywords:
+          type: array
+          items:
+            type: string
+        summary:
+          type: string
+        scores:
+          type: object
+          properties:
+            rest:
+              type: integer
+            exploration:
+              type: integer
+            activity:
+              type: integer
+            gourmet:
+              type: integer
     ErrorResponse:
       type: object
       properties:
