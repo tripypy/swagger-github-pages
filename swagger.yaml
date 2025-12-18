@@ -1256,6 +1256,10 @@ components:
       properties:
         content:
           type: string
+        parentId:
+          type: integer
+          format: int64
+          description: 부모 댓글 ID (대댓글일 경우 필수)
     TripLogLikeResponseDto:
       type: object
       properties:
