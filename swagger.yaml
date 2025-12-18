@@ -340,6 +340,33 @@ paths:
       responses:
         '200':
           description: 성공
+  /trips/{tripId}/scrap:
+    post:
+      tags:
+        - trip
+      summary: 여행 스크랩 (복사)
+      description: 다른 사용자의 공개된 여행 또는 자신의 여행을 복사하여 내 여행으로 저장합니다.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: 스크랩 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tripId:
+                    type: integer
+                    format: int64
+                description: 생성된 여행 ID
   /trip-logs:
     post:
       tags:
