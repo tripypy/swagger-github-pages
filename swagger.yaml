@@ -416,6 +416,110 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PageTripLogFeedResponseDto'
+  /spots:
+    get:
+      tags:
+        - spot
+      summary: Kakao Place ID로 장소 조회
+      description: |
+        - Kakao Place ID로 DB에 저장된 장소를 조회합니다.
+        - 존재하지 않으면 404 Not Found를 반환합니다.
+      parameters:
+        - name: kakaoPlaceId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpotResponseDto'
+        '404':
+          description: 장소를 찾을 수 없음
+    post:
+      tags:
+        - spot
+      summary: 장소 생성
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpotRequestDto'
+      responses:
+        '201':
+          description: 생성 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpotResponseDto'
+        '409':
+          description: 이미 존재하는 장소
+
+  /spots/{spotId}:
+    get:
+      tags:
+        - spot
+      summary: 장소 상세 조회
+      parameters:
+        - name: spotId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpotResponseDto'
+        '404':
+          description: 장소를 찾을 수 없음
+    patch:
+      tags:
+        - spot
+      summary: 장소 정보 수정
+      parameters:
+        - name: spotId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpotRequestDto'
+      responses:
+        '200':
+          description: 수정 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpotResponseDto'
+    delete:
+      tags:
+        - spot
+      summary: 장소 삭제
+      parameters:
+        - name: spotId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: 삭제 성공
+        '404':
+          description: 장소를 찾을 수 없음
   /search/place:
     get:
       tags:
@@ -1168,7 +1272,7 @@ components:
         - required:
             - spotId
         - required:
-            - spot'
+            - spot
     SpotRequestDto:
       type: object
       properties:
