@@ -1109,35 +1109,46 @@ components:
     TripLogSearchDoc:
       type: object
       properties:
-        id:
+        log_id:
+          type: integer
+          format: int64
+        trip_id:
+          type: integer
+          format: int64
+        user_id:
           type: integer
           format: int64
         title:
           type: string
         content:
           type: string
-        nickname:
+        trip_location_summary:
           type: string
-        profile_image_url:
+        trip_start_date:
           type: string
-        image_url:
+          format: date
+        trip_end_date:
           type: string
-        createdAt:
+          format: date
+        created_at:
           type: string
           format: date-time
+        image_urls:
+          type: array
+          items:
+            type: string
     TripSearchDoc:
       type: object
       properties:
-        id:
+        trip_id:
+          type: integer
+          format: int64
+        user_id:
           type: integer
           format: int64
         title:
           type: string
-        nickname:
-          type: string
-        profile_image_url:
-          type: string
-        image_url:
+        location_summary:
           type: string
         start_date:
           type: string
@@ -1145,9 +1156,31 @@ components:
         end_date:
           type: string
           format: date
-        createdAt:
+        created_at:
           type: string
           format: date-time
+        spot_names:
+          type: array
+          items:
+            type: string
+        spot_categories:
+          type: array
+          items:
+            type: string
+        spots_preview:
+          type: array
+          items:
+            $ref: '#/components/schemas/SpotPreview'
+    SpotPreview:
+      type: object
+      properties:
+        spot_id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        category:
+          type: string
     TripDetailResponseDto:
       type: object
       properties:
