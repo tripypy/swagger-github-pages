@@ -567,6 +567,33 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/SpotResponseDto'
+  /spot-reviews/me:
+    get:
+      tags:
+        - spot-review
+      summary: 내 리뷰 목록 조회 (필터링 가능)
+      description: |
+        - 로그인한 사용자가 작성한 리뷰 목록을 조회합니다.
+        - spotId 파라미터가 있으면 해당 장소에 대한 리뷰만 반환합니다 (0개 또는 1개).
+        - spotId 파라미터가 없으면 사용자가 작성한 모든 리뷰를 반환합니다.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: spotId
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: 성공
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SpotReviewResponseDto'
   /spot-reviews:
     get:
       tags:
@@ -585,9 +612,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/SpotReviewResponseDto'
+                $ref: '#/components/schemas/SpotReviewListResponseDto'
     post:
       tags:
         - spot-review
@@ -1632,3 +1657,12 @@ components:
         reviewCount:
           type: integer
           format: int64
+    SpotReviewListResponseDto:
+      type: object
+      properties:
+        myReview:
+          $ref: '#/components/schemas/SpotReviewResponseDto'
+        reviews:
+          type: array
+          items:
+            $ref: '#/components/schemas/SpotReviewResponseDto'
