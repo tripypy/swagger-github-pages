@@ -369,6 +369,26 @@ paths:
                     type: integer
                     format: int64
                 description: 생성된 여행 ID
+  /trip-logs/images/presigned-url:
+    post:
+      tags:
+        - triplog
+      summary: 이미지 업로드용 Presigned URL 생성
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ImageUploadRequestDto'
+      responses:
+        '200':
+          description: 생성 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PresignedUrlResponseDto'
   /trip-logs:
     post:
       tags:
@@ -404,7 +424,7 @@ paths:
           schema:
             type: integer
             default: 1
-        - name: size
+        - name: limit
           in: query
           schema:
             type: integer
@@ -442,7 +462,11 @@ paths:
     post:
       tags:
         - spot
-      summary: 장소 생성
+      summary: 장소 생성 (Upsert)
+      description: |
+        - Kakao Place ID로 장소를 생성하거나 조회합니다.
+        - 이미 존재하면 200 OK와 함께 기존 장소 정보를 반환합니다.
+        - 존재하지 않으면 201 Created와 함께 새 장소를 생성하고 반환합니다.
       requestBody:
         required: true
         content:
@@ -450,6 +474,12 @@ paths:
             schema:
               $ref: '#/components/schemas/SpotRequestDto'
       responses:
+        '200':
+          description: 이미 존재하는 장소 반환
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpotResponseDto'
         '201':
           description: 생성 성공
           content:
@@ -1018,6 +1048,18 @@ components:
       scheme: bearer
       bearerFormat: JWT
   schemas:
+    ImageUploadRequestDto:
+      type: object
+      properties:
+        fileName:
+          type: string
+          description: 업로드할 파일명 (확장자 포함)
+    PresignedUrlResponseDto:
+      type: object
+      properties:
+        presignedUrl:
+          type: string
+          description: S3 업로드용 Presigned URL
     LoginRequestDto:
       type: object
       properties:
