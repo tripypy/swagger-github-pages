@@ -1267,6 +1267,10 @@ components:
           format: int64
         title:
           type: string
+        authorId:
+          type: integer
+          format: int64
+          description: 여행 생성자의 ID
         startDate:
           type: string
           format: date
@@ -1281,6 +1285,9 @@ components:
           enum: [PUBLIC, PRIVATE]
         locationSummary:
           type: string
+        isOwner:
+          type: boolean
+          description: 조회한 사용자가 여행의 주인인지 여부
         tripItems:
           type: array
           items:
