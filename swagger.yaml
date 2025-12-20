@@ -384,7 +384,6 @@ paths:
               $ref: '#/components/schemas/ImageUploadRequestDto'
       responses:
         '200':
-        '200':
           description: |
             생성 성공
             
