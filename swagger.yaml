@@ -18,6 +18,8 @@ tags:
     description: 여행 기록 관련 API
   - name: user
     description: 사용자 관련 API
+  - name: friend
+    description: 친구 관련 API
 paths:
   /auth/login:
     post:
@@ -770,6 +772,31 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SliceTripLogFeedResponseDto'
+  /trip-logs/feed/friends:
+    get:
+      tags:
+        - triplog
+      summary: 친구 피드 조회
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: cursor
+          in: query
+          schema:
+            type: integer
+            format: int64
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SliceTripLogFeedResponseDto'
   /trip-logs/{logId}:
     get:
       tags:
@@ -955,6 +982,27 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TripLogLikeResponseDto'
+  /users/search:
+    get:
+      tags:
+        - user
+      summary: 사용자 검색
+      description: 닉네임으로 사용자를 검색합니다.
+      parameters:
+        - name: nickname
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 성공
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserSearchResponseDto'
   /users/me:
     get:
       tags:
@@ -1069,6 +1117,138 @@ paths:
       responses:
         '204':
           description: 성공
+  /friends/requests:
+    post:
+      tags:
+        - friend
+      summary: 친구 신청 전송
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FriendRequestRequestDto'
+      responses:
+        '201':
+          description: 친구 신청 성공
+  /friends/requests/received:
+    get:
+      tags:
+        - friend
+      summary: 받은 친구 신청 목록 조회
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 성공
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FriendRequestResponseDto'
+  /friends/requests/sent:
+    get:
+      tags:
+        - friend
+      summary: 보낸 친구 신청 목록 조회
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 성공
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FriendRequestResponseDto'
+  /friends/requests/{requestId}/accept:
+    post:
+      tags:
+        - friend
+      summary: 친구 신청 수락
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: requestId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: 친구 신청 수락 성공 (No Content)
+  /friends/requests/{requestId}/decline:
+    post:
+      tags:
+        - friend
+      summary: 친구 신청 거절
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: requestId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: 친구 신청 거절 성공 (No Content)
+  /friends/requests/sent/{requestId}:
+    delete:
+      tags:
+        - friend
+      summary: 보낸 친구 신청 취소
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: requestId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: 친구 신청 취소 성공 (No Content)
+  /friends:
+    get:
+      tags:
+        - friend
+      summary: 친구 목록 조회
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 성공
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SimpleUserInfoDto'
+  /friends/{friendId}:
+    delete:
+      tags:
+        - friend
+      summary: 친구 삭제
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: friendId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: 친구 삭제 성공 (No Content)
 
 components:
   securitySchemes:
@@ -1641,6 +1821,18 @@ components:
           type: boolean
         friendsCount:
           type: integer
+        tripOverviews:
+          type: array
+          items:
+            $ref: '#/components/schemas/TripResponseDto'
+        completedTripDetails:
+          type: array
+          items:
+            $ref: '#/components/schemas/TripDetailResponseDto'
+        logs:
+          type: array
+          items:
+            $ref: '#/components/schemas/TripLogSummaryDto'
     UpdateUserRequestDto:
       type: object
       properties:
@@ -1676,6 +1868,18 @@ components:
           type: boolean
         friendsCount:
           type: integer
+        tripOverviews:
+          type: array
+          items:
+            $ref: '#/components/schemas/TripResponseDto'
+        completedTripDetails:
+          type: array
+          items:
+            $ref: '#/components/schemas/TripDetailResponseDto'
+        logs:
+          type: array
+          items:
+            $ref: '#/components/schemas/TripLogSummaryDto'
     ProfileImageUpdateResponseDto:
       type: object
       properties:
@@ -1783,3 +1987,51 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SpotReviewResponseDto'
+    FriendRequestRequestDto:
+      type: object
+      properties:
+        receiverId:
+          type: integer
+          format: int64
+          description: 친구 요청을 받을 사용자 ID
+    FriendRequestResponseDto:
+      type: object
+      properties:
+        requestId:
+          type: integer
+          format: int64
+        user:
+          $ref: '#/components/schemas/SimpleUserInfoDto'
+        createdAt:
+          type: string
+          format: date-time
+    SimpleUserInfoDto:
+      type: object
+      properties:
+        userId:
+          type: integer
+          format: int64
+        nickname:
+          type: string
+        profileImageUrl:
+          type: string
+    UserSearchResponseDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        nickname:
+          type: string
+        profileImageUrl:
+          type: string
+    TripLogSummaryDto:
+      type: object
+      properties:
+        logId:
+          type: integer
+          format: int64
+        title:
+          type: string
+        thumbnailUrl:
+          type: string
