@@ -27,6 +27,8 @@ tags:
     description: 사용자 관련 API
   - name: friend
     description: 친구 관련 API
+  - name: notification
+    description: 알림 관련 API
 
 paths:
   /ai/chat:
@@ -1326,6 +1328,76 @@ paths:
         '204':
           description: 친구 삭제 성공 (No Content)
 
+  /notifications/subscribe:
+    get:
+      tags: [notification]
+      summary: 알림 구독 (SSE)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: SSE 스트림 연결 성공 (text/event-stream)
+
+  /notifications:
+    get:
+      tags: [notification]
+      summary: 알림 목록 조회
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 성공
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NotificationResponseDto'
+
+  /notifications/{id}/read:
+    patch:
+      tags: [notification]
+      summary: 알림 읽음 처리
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: 성공
+
+  /notifications/read-all:
+    patch:
+      tags: [notification]
+      summary: 모든 알림 읽음 처리
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 성공
+
+  /notifications/{id}:
+    delete:
+      tags: [notification]
+      summary: 알림 삭제
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: 성공
+
 components:
   securitySchemes:
     bearerAuth:
@@ -2225,3 +2297,32 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/RecommendSpotDto'
+
+    NotificationResponseDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        senderId:
+          type: integer
+          format: int64
+        senderNickname:
+          type: string
+        senderProfileImageUrl:
+          type: string
+        type:
+          type: string
+          enum: [LIKE, COMMENT, FRIEND_REQUEST, FRIEND_ACCEPT, SCRAP]
+        message:
+          type: string
+        targetId:
+          type: integer
+          format: int64
+        targetUrl:
+          type: string
+        isRead:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
